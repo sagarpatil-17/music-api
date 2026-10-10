@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum SongStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  UNPUBLISHED
+}
+
+enum AlbumType {
+  SINGLE
+  EP
+  ALBUM
+}
+
+enum PlaylistVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+model user {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String     @unique
+  password  String
+  avatarUrl String?
+  role      UserRole   @default(USER)
+  status    UserStatus @default(ACTIVE)
+
+  playlists  playlist[]
+  likedSongs liked_song[]
+  history    listening_history[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role, status])
+}
+
+model song {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  artists     String[]
+  albumId     String?  @db.ObjectId
+
+  // Supabase Storage object keys, not the audio binaries
+  audioPath String
+  status    SongStatus @default(DRAFT)
+
+  playCount   Int       @default(0)
+  releaseDate DateTime?
+
+  album            album?              @relation(fields: [albumId], references: [id])
+  playlistItems    playlist_song[]
+  likes            liked_song[]
+  listeningHistory listening_history[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@index([albumId])
+  @@index([status, createdAt])
+}
+
+model album {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String?
+  coverImagePath String?
+  albumType      AlbumType @default(ALBUM)
+  releaseDate    DateTime?
+
+  songs song[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+}
+
+model playlist {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  description    String?
+  coverImagePath String?
+  visibility     PlaylistVisibility @default(PRIVATE)
+  userId         String             @db.ObjectId
+
+  user  user            @relation(fields: [userId], references: [id])
+  songs playlist_song[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+  @@index([visibility, createdAt])
+}
+
+model playlist_song {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  playlistId String   @db.ObjectId
+  songId     String   @db.ObjectId
+  position   Int
+  addedAt    DateTime @default(now())
+
+  playlist playlist @relation(fields: [playlistId], references: [id])
+  song     song     @relation(fields: [songId], references: [id])
+
+  @@unique([playlistId, songId])
+  @@index([playlistId, position])
+  @@index([songId])
+}
+
+model liked_song {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  songId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  user user @relation(fields: [userId], references: [id])
+  song song @relation(fields: [songId], references: [id])
+
+  @@unique([userId, songId])
+  @@index([userId, createdAt])
+}
+
+model listening_history {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  songId          String   @db.ObjectId
+  playedAt        DateTime @default(now())
+  progressSeconds Int      @default(0)
+  completed       Boolean  @default(false)
+
+  user user @relation(fields: [userId], references: [id])
+  song song @relation(fields: [songId], references: [id])
+
+  @@index([userId, playedAt])
+  @@index([songId, playedAt])
+}
