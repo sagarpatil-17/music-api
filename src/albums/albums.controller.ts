@@ -8,6 +8,7 @@ import {
   Patch,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { AlbumsService } from './albums.service';
@@ -21,7 +22,7 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('AlbumsController')
 @Controller('albums')
 export class AlbumsController {
-  constructor(private albums: AlbumsService) {}
+  constructor(private albums: AlbumsService) { }
 
   @Get()
   findAll() {
@@ -36,8 +37,10 @@ export class AlbumsController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  create(@Body() dto: CreateAlbumDto) {
-    return this.albums.create(dto);
+  create(@Body() dto: CreateAlbumDto, @Req() req: Request,) {
+    const user = req?.['user'] as { id?: string; sub?: string };
+
+    return this.albums.create(dto, user.id ?? user.sub);
   }
 
   @Patch(':id')

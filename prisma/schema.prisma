@@ -30,12 +30,6 @@ enum SongStatus {
   UNPUBLISHED
 }
 
-enum AlbumType {
-  SINGLE
-  EP
-  ALBUM
-}
-
 enum PlaylistVisibility {
   PUBLIC
   PRIVATE
@@ -88,12 +82,10 @@ model song {
 }
 
 model album {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  description    String?
-  coverImagePath String?
-  albumType      AlbumType @default(ALBUM)
-  releaseDate    DateTime?
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  created_by  String  @db.ObjectId
 
   songs song[]
 

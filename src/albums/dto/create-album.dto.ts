@@ -7,7 +7,6 @@ import {
     IsString,
     MinLength,
 } from 'class-validator';
-import { AlbumType } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAlbumDto {
@@ -20,23 +19,4 @@ export class CreateAlbumDto {
     @IsString()
     @ApiProperty()
     description?: string;
-
-    @IsMongoId()
-    @ApiProperty()
-    artistId: string;
-
-    @IsOptional()
-    @IsString()
-    @ApiProperty()
-    coverImagePath?: string;
-
-    @IsOptional()
-    @IsEnum(AlbumType)
-    @ApiProperty()
-    albumType?: AlbumType;
-
-    @IsOptional()
-    @IsDateString()
-    @ApiProperty()
-    releaseDate?: string;
 }

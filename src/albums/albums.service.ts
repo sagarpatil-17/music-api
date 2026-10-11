@@ -1,20 +1,24 @@
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 
 @Injectable()
 export class AlbumsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  create(dto: CreateAlbumDto) {
+  create(dto: CreateAlbumDto, userId?: string) {
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Authenticated user ID not found',
+      );
+    }
+
     return this.prisma.album.create({
       data: {
         ...dto,
-        releaseDate: dto.releaseDate
-          ? new Date(dto.releaseDate)
-          : undefined,
+        created_by: userId,
       },
     });
   }
@@ -50,10 +54,7 @@ export class AlbumsService {
     return this.prisma.album.update({
       where: { id },
       data: {
-        ...dto,
-        releaseDate: dto.releaseDate
-          ? new Date(dto.releaseDate)
-          : undefined,
+        ...dto
       },
     });
   }

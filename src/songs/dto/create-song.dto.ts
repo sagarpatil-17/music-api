@@ -32,11 +32,6 @@ export class CreateSongDto {
     @ApiProperty()
     audioPath: string;
 
-    @IsInt()
-    @Min(1)
-    @ApiProperty()
-    durationSeconds: number;
-
     @IsOptional()
     @IsMongoId()
     @ApiProperty()
