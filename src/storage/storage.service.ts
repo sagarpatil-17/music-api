@@ -1,8 +1,8 @@
 
 import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
+    BadRequestException,
+    Injectable,
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -12,129 +12,129 @@ import type { Multer } from 'multer';
 
 @Injectable()
 export class StorageService {
-  private readonly supabase: SupabaseClient;
-  private readonly musicBucket: string;
-  private readonly albumCoversBucket: string;
-  private readonly playlistCoversBucket: string;
+    private readonly supabase: SupabaseClient;
+    private readonly musicBucket: string;
+    private readonly albumCoversBucket: string;
+    private readonly playlistCoversBucket: string;
 
-  constructor(config: ConfigService) {
-    this.supabase = createClient(
-      config.getOrThrow<string>('SUPABASE_URL'),
-      config.getOrThrow<string>('SUPABASE_SERVICE_ROLE_KEY'),
-    );
+    constructor(config: ConfigService) {
+        this.supabase = createClient(
+            config.getOrThrow<string>('SUPABASE_URL'),
+            config.getOrThrow<string>('SUPABASE_SERVICE_ROLE_KEY'),
+        );
 
-    this.musicBucket =
-      config.get<string>('SUPABASE_MUSIC_BUCKET') || 'music';
+        this.musicBucket =
+            config.get<string>('SUPABASE_MUSIC_BUCKET') || 'music';
 
-    this.albumCoversBucket =
-      config.get<string>('SUPABASE_ALBUM_COVER_BUCKET') || 'album-cover';
+        this.albumCoversBucket =
+            config.get<string>('SUPABASE_ALBUM_COVER_BUCKET') || 'album_cover';
 
-    this.playlistCoversBucket =
-      config.get<string>('SUPABASE_PLAYLIST_COVER_BUCKET') ||
-      'playlist-cover';
-  }
-
-  async uploadAudio(file: Express.Multer.File) {
-    if (!file || !file.mimetype.startsWith('audio/')) {
-      throw new BadRequestException('Please upload a valid audio file');
+        this.playlistCoversBucket =
+            config.get<string>('SUPABASE_PLAYLIST_COVER_BUCKET') ||
+            'playlist_cover';
     }
 
-    const extension = extname(file.originalname).toLowerCase();
-    const allowed = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac'];
+    async uploadAudio(file: Express.Multer.File) {
+        if (!file || !file.mimetype.startsWith('audio/')) {
+            throw new BadRequestException('Please upload a valid audio file');
+        }
 
-    if (!allowed.includes(extension)) {
-      throw new BadRequestException('Unsupported audio format');
+        const extension = extname(file.originalname).toLowerCase();
+        const allowed = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac'];
+
+        if (!allowed.includes(extension)) {
+            throw new BadRequestException('Unsupported audio format');
+        }
+
+        const path = `${randomUUID()}${extension}`;
+
+        const { error } = await this.supabase.storage
+            .from(this.musicBucket)
+            .upload(path, file.buffer, {
+                contentType: file.mimetype,
+                upsert: false,
+            });
+
+        if (error) {
+            throw new InternalServerErrorException(
+                `Audio upload failed: ${error.message}`,
+            );
+        }
+
+        return { audioPath: path };
     }
 
-    const path = `${randomUUID()}${extension}`;
+    async uploadCover(
+        file: Express.Multer.File,
+        type: 'album' | 'playlist' = 'album',
+    ) {
+        if (!file || !file.mimetype.startsWith('image/')) {
+            throw new BadRequestException('Please upload an image');
+        }
 
-    const { error } = await this.supabase.storage
-      .from(this.musicBucket)
-      .upload(path, file.buffer, {
-        contentType: file.mimetype,
-        upsert: false,
-      });
+        const extension = extname(file.originalname).toLowerCase();
+        const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
 
-    if (error) {
-      throw new InternalServerErrorException(
-        `Audio upload failed: ${error.message}`,
-      );
+        if (!allowed.includes(extension)) {
+            throw new BadRequestException('Unsupported image format');
+        }
+
+        const bucket =
+            type === 'playlist'
+                ? this.playlistCoversBucket
+                : this.albumCoversBucket;
+
+        const path = `${randomUUID()}${extension}`;
+
+        const { error } = await this.supabase.storage
+            .from(bucket)
+            .upload(path, file.buffer, {
+                contentType: file.mimetype,
+                upsert: false,
+            });
+
+        if (error) {
+            throw new InternalServerErrorException(
+                `Cover upload failed: ${error.message}`,
+            );
+        }
+
+        return { coverImagePath: path };
     }
 
-    return { audioPath: path };
-  }
+    async getAudioUrl(path: string) {
+        const { data, error } = await this.supabase.storage
+            .from(this.musicBucket)
+            .createSignedUrl(path, 3600);
 
-  async uploadCover(
-    file: Express.Multer.File,
-    type: 'album' | 'playlist' = 'album',
-  ) {
-    if (!file || !file.mimetype.startsWith('image/')) {
-      throw new BadRequestException('Please upload an image');
+        if (error || !data?.signedUrl) {
+            throw new InternalServerErrorException(
+                'Could not create playback URL',
+            );
+        }
+
+        return { url: data.signedUrl, expiresIn: 3600 };
     }
 
-    const extension = extname(file.originalname).toLowerCase();
-    const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
+    async getCoverUrl(
+        path: string,
+        type: 'album' | 'playlist' = 'album',
+    ) {
+        const bucket =
+            type === 'playlist'
+                ? this.playlistCoversBucket
+                : this.albumCoversBucket;
 
-    if (!allowed.includes(extension)) {
-      throw new BadRequestException('Unsupported image format');
+        const { data, error } = await this.supabase.storage
+            .from(bucket)
+            .createSignedUrl(path, 3600);
+
+        if (error || !data?.signedUrl) {
+            throw new InternalServerErrorException(
+                'Could not create cover URL',
+            );
+        }
+
+        return { url: data.signedUrl, expiresIn: 3600 };
     }
-
-    const bucket =
-      type === 'playlist'
-        ? this.playlistCoversBucket
-        : this.albumCoversBucket;
-
-    const path = `${randomUUID()}${extension}`;
-
-    const { error } = await this.supabase.storage
-      .from(bucket)
-      .upload(path, file.buffer, {
-        contentType: file.mimetype,
-        upsert: false,
-      });
-
-    if (error) {
-      throw new InternalServerErrorException(
-        `Cover upload failed: ${error.message}`,
-      );
-    }
-
-    return { coverImagePath: path };
-  }
-
-  async getAudioUrl(path: string) {
-    const { data, error } = await this.supabase.storage
-      .from(this.musicBucket)
-      .createSignedUrl(path, 3600);
-
-    if (error || !data?.signedUrl) {
-      throw new InternalServerErrorException(
-        'Could not create playback URL',
-      );
-    }
-
-    return { url: data.signedUrl, expiresIn: 3600 };
-  }
-
-  async getCoverUrl(
-    path: string,
-    type: 'album' | 'playlist' = 'album',
-  ) {
-    const bucket =
-      type === 'playlist'
-        ? this.playlistCoversBucket
-        : this.albumCoversBucket;
-
-    const { data, error } = await this.supabase.storage
-      .from(bucket)
-      .createSignedUrl(path, 3600);
-
-    if (error || !data?.signedUrl) {
-      throw new InternalServerErrorException(
-        'Could not create cover URL',
-      );
-    }
-
-    return { url: data.signedUrl, expiresIn: 3600 };
-  }
 }

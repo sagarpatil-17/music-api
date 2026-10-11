@@ -6,16 +6,20 @@ import { HistoryModule } from './history/history.module';
 import { LibraryModule } from './library/library.module';
 import { PlaylistsModule } from './playlists/playlists.module';
 import { SongsModule } from './songs/songs.module';
+import { StorageModule } from './storage/storage.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 
 @Module({
   imports: [
     AuthModule,
     AlbumsModule,
+    DashboardModule,
     HistoryModule,
     LibraryModule,
     PlaylistsModule,
     SongsModule,
+    StorageModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

@@ -28,11 +28,18 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('SongsController')
 @Controller('songs')
 export class SongsController {
-  constructor(private songs: SongsService) {}
+  constructor(private songs: SongsService) { }
 
   @Get()
   findAll(@Query('search') search?: string) {
     return this.songs.findAll(search);
+  }
+
+  @Get('admin/list')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  findAllForAdmin(@Query('search') search?: string) {
+    return this.songs.findAllForAdmin(search);
   }
 
   @Get(':id/playback')

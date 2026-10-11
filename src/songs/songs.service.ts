@@ -15,7 +15,7 @@ export class SongsService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
-  ) {}
+  ) { }
 
   async uploadAudio(file: Express.Multer.File) {
     return this.storage.uploadAudio(file);
@@ -28,7 +28,6 @@ export class SongsService {
         description: dto.description,
         artists: dto.artists,
         audioPath: dto.audioPath,
-        durationSeconds: dto.durationSeconds,
         albumId: dto.albumId || null,
         releaseDate: dto.releaseDate ? new Date(dto.releaseDate) : null,
         status: SongStatus.DRAFT,
@@ -56,6 +55,27 @@ export class SongsService {
 
     if (!song) throw new NotFoundException('Song not found');
     return song;
+  }
+
+  async findAllForAdmin(search?: string) {
+    return this.prisma.song.findMany({
+      where: {
+        ...(search?.trim()
+          ? {
+            title: {
+              contains: search.trim(),
+              mode: 'insensitive',
+            },
+          }
+          : {}),
+      },
+      include: {
+        album: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   async getPlaybackUrl(id: string) {

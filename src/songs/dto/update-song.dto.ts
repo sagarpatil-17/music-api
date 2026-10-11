@@ -38,10 +38,4 @@ export class UpdateSongDto {
     @IsDateString()
     @ApiProperty()
     releaseDate?: string;
-
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @ApiProperty()
-    durationSeconds?: number;
 }
