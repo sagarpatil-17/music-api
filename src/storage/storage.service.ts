@@ -102,18 +102,30 @@ export class StorageService {
         return { coverImagePath: path };
     }
 
+
     async getAudioUrl(path: string) {
+        const cleanPath = path?.trim();
+
+        if (!cleanPath) {
+            throw new BadRequestException('Audio path is required');
+        }
+
         const { data, error } = await this.supabase.storage
             .from(this.musicBucket)
-            .createSignedUrl(path, 3600);
+            .createSignedUrl(cleanPath, 3600);
 
         if (error || !data?.signedUrl) {
+            console.error('Supabase signed URL error:', error?.message);
+
             throw new InternalServerErrorException(
                 'Could not create playback URL',
             );
         }
 
-        return { url: data.signedUrl, expiresIn: 3600 };
+        return {
+            url: data.signedUrl,
+            expiresIn: 3600,
+        };
     }
 
     async getCoverUrl(

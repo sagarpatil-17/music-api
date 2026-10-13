@@ -1,65 +1,55 @@
-
 import {
   Body,
   Controller,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { IsBoolean, IsInt, Min } from 'class-validator';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { HistoryService } from './history.service';
-import { ApiTags } from '@nestjs/swagger';
+import { UpdateHistoryProgressDto } from './dto/update-history-progress.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
-class UpdateProgressDto {
-  @IsInt()
-  @Min(0)
-  progressSeconds: number;
-
-  @IsBoolean()
-  completed: boolean;
-}
-
-@ApiTags('HistoryController')
+@ApiTags('Listening History')
+@ApiBearerAuth()
 @Controller('history')
 @UseGuards(JwtAuthGuard)
 export class HistoryController {
-  constructor(private history: HistoryService) {}
+  constructor(private readonly historyService: HistoryService) {}
 
   @Post(':songId')
   recordPlay(
     @CurrentUser() user: { id: string },
     @Param('songId') songId: string,
   ) {
-    return this.history.recordPlay(user.id, songId);
+    return this.historyService.recordPlay(user.id, songId);
   }
 
   @Get()
-  findMine(@CurrentUser() user: { id: string }) {
-    return this.history.findMine(user.id);
+  getMyHistory(@CurrentUser() user: { id: string }) {
+    return this.historyService.getMyHistory(user.id);
   }
 
-  @Patch(':historyId/progress')
+  @Patch(':songId/progress')
   updateProgress(
     @CurrentUser() user: { id: string },
-    @Param('historyId') historyId: string,
-    @Body() dto: UpdateProgressDto,
+    @Param('songId') songId: string,
+    @Body() dto: UpdateHistoryProgressDto,
   ) {
-    return this.history.updateProgress(
+    return this.historyService.updateProgress(
       user.id,
-      historyId,
-      dto.progressSeconds,
-      dto.completed,
+      songId,
+      dto,
     );
   }
 
   @Delete()
-  clearMine(@CurrentUser() user: { id: string }) {
-    return this.history.clearMine(user.id);
+  clearMyHistory(@CurrentUser() user: { id: string }) {
+    return this.historyService.clearMyHistory(user.id);
   }
 }

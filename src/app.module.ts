@@ -8,6 +8,8 @@ import { PlaylistsModule } from './playlists/playlists.module';
 import { SongsModule } from './songs/songs.module';
 import { StorageModule } from './storage/storage.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { LikesModule } from './likes/likes.module';
+import { ProfileModule } from './profile/profile.module';
 
 
 @Module({
@@ -19,6 +21,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
     LibraryModule,
     PlaylistsModule,
     SongsModule,
+    LikesModule,
+    ProfileModule,
     StorageModule,
     ConfigModule.forRoot({
       isGlobal: true,
