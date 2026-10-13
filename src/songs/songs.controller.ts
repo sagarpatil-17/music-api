@@ -12,46 +12,55 @@ import {
   UseInterceptors,
   ParseFilePipe,
   MaxFileSizeValidator,
-  FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UserRole } from '@prisma/client';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
 import { SongsService } from './songs.service';
 import { CreateSongDto } from './dto/create-song.dto';
 import { UpdateSongDto } from './dto/update-song.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('SongsController')
+@ApiTags('Songs')
 @Controller('songs')
 export class SongsController {
-  constructor(private songs: SongsService) { }
+  constructor(private readonly songs: SongsService) {}
 
+  // Public: only published songs are returned.
   @Get()
+  @ApiOperation({ summary: 'Get published songs' })
   findAll(@Query('search') search?: string) {
     return this.songs.findAll(search);
   }
 
+  // Admin: returns songs in every status.
   @Get('admin/list')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get all songs for admin' })
   findAllForAdmin(@Query('search') search?: string) {
     return this.songs.findAllForAdmin(search);
   }
 
+  // Public: returns a temporary signed URL for a published song.
   @Get(':id/playback')
+  @ApiOperation({ summary: 'Get published song playback URL' })
   playback(@Param('id') id: string) {
     return this.songs.getPlaybackUrl(id);
   }
 
+  // Public: details for a published song.
   @Get(':id')
+  @ApiOperation({ summary: 'Get published song details' })
   findOne(@Param('id') id: string) {
     return this.songs.findOne(id);
   }
 
+  // Admin: upload audio to private Supabase storage.
   @Post('upload-audio')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -65,7 +74,9 @@ export class SongsController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }),
+          new MaxFileSizeValidator({
+            maxSize: 50 * 1024 * 1024,
+          }),
         ],
       }),
     )
@@ -98,7 +109,7 @@ export class SongsController {
   @Patch(':id/unpublish')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  remove(@Param('id') id: string) {
+  unpublish(@Param('id') id: string) {
     return this.songs.remove(id);
   }
 }

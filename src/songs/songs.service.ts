@@ -35,35 +35,17 @@ export class SongsService {
     });
   }
 
+
   async findAll(search?: string) {
+    const term = search?.trim();
+
     return this.prisma.song.findMany({
       where: {
         status: SongStatus.PUBLISHED,
-        ...(search
-          ? { title: { contains: search, mode: 'insensitive' } }
-          : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async findOne(id: string) {
-    const song = await this.prisma.song.findFirst({
-      where: { id, status: SongStatus.PUBLISHED },
-      include: { album: true },
-    });
-
-    if (!song) throw new NotFoundException('Song not found');
-    return song;
-  }
-
-  async findAllForAdmin(search?: string) {
-    return this.prisma.song.findMany({
-      where: {
-        ...(search?.trim()
+        ...(term
           ? {
             title: {
-              contains: search.trim(),
+              contains: term,
               mode: 'insensitive',
             },
           }
@@ -78,8 +60,53 @@ export class SongsService {
     });
   }
 
+  async findOne(id: string) {
+    const song = await this.prisma.song.findFirst({
+      where: {
+        id,
+        status: SongStatus.PUBLISHED,
+      },
+      include: {
+        album: true,
+      },
+    });
+
+    if (!song) {
+      throw new NotFoundException('Song not found');
+    }
+
+    return song;
+  }
+
+  async findAllForAdmin(search?: string) {
+    const term = search?.trim();
+
+    return this.prisma.song.findMany({
+      where: term
+        ? {
+          title: {
+            contains: term,
+            mode: 'insensitive',
+          },
+        }
+        : {},
+      include: {
+        album: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   async getPlaybackUrl(id: string) {
+    // This lookup rejects drafts and unpublished songs.
     const song = await this.findOne(id);
+
+    if (!song.audioPath?.trim()) {
+      throw new NotFoundException('Audio file not found for this song');
+    }
+
     const playback = await this.storage.getAudioUrl(song.audioPath);
 
     return {
