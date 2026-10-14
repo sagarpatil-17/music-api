@@ -1,124 +1,134 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Fresh Music — Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The backend API for **Fresh Music**, a full-stack music streaming application. Built with NestJS, Prisma, and MongoDB, the API supports application workflows for music discovery, content management, authentication, and audio delivery.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## ✨ Features
 
-## Description
+- 🔐 User authentication and role-based authorization
+- 🎵 Song listing and search
+- 💿 Album management
+- ☁️ Audio and cover-image storage integration with Supabase
+- 🔗 Signed audio URLs for playback
+- 👤 User and administrator workflows
+- 🛡️ Protected endpoints and request validation
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Additional functionality, such as playlists, likes, and listening history, should be documented according to the endpoints implemented in the current version.
 
-## Project setup
+## 🛠️ Tech Stack
 
-```bash
-$ npm install
-```
+- **Framework:** NestJS
+- **Language:** TypeScript
+- **Database:** MongoDB
+- **ORM:** Prisma
+- **Storage:** Supabase Storage
+- **Authentication:** JWT-based authentication, if enabled in the current configuration
+- **API Style:** REST
 
-## Compile and run the project
+## 🏗️ Architecture
 
-```bash
-# development
-$ npm run start
+The backend is responsible for:
 
-# watch mode
-$ npm run start:dev
+- Managing users and access permissions
+- Serving published music and album information
+- Handling administrator operations for music content
+- Generating signed URLs for protected audio files
+- Integrating with MongoDB through Prisma
+- Managing audio and image storage through Supabase
 
-# production mode
-$ npm run start:prod
-```
+## 🚀 Getting Started
 
-## Run tests
+### Prerequisites
 
-```bash
-# unit tests
-$ npm run test
+- Node.js
+- npm
+- MongoDB connection
+- Supabase project with the required storage buckets
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Installation
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone https://github.com/sagarpatil-17/music_api.git
+cd music_api
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Environment Variables
 
-## Observability
+Create a `.env` file with the variables required by your application.
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+Example:
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+```env
+PORT=3000
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+DATABASE_URL="your-mongodb-connection-string"
 
-To add it to this project:
+SUPABASE_URL="your-supabase-project-url"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+SUPABASE_MUSIC_BUCKET="music"
+```
+
+### Database Setup
+
+Run the Prisma commands appropriate for your project's installed Prisma version and configuration. Review the project scripts and Prisma configuration before running migrations or generating the client.
+
+### Run the Application
+
+For a typical NestJS development setup:
 
 ```bash
-$ npm install @nestjs/observe
+npm run start:dev
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
+### Build for Production
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+```bash
+npm run build
+```
 
-## Resources
+Use the production start command configured in your `package.json`.
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🔌 API Modules
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+The following describes the intended API areas; replace example routes with the exact routes exposed by your controllers.
 
-## Support
+| Module | Responsibility |
+|---|---|
+| Authentication | User login and authentication |
+| Songs | List, search, upload, and manage songs |
+| Albums | Retrieve and manage albums |
+| Playback | Generate signed URLs for audio playback |
+| Users | User-related operations and profile data |
+| Playlists | Playlist operations, if implemented |
+| Likes and History | Listening preferences and history, if implemented |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 🔐 Security
 
-## Stay in touch
+- Protect administrative endpoints with authentication and role checks.
+- Validate uploaded audio files and enforce size limits.
+- Keep the Supabase service-role key on the server.
+- Generate time-limited signed URLs for private storage.
+- Validate request data and handle errors consistently.
+- Avoid logging credentials or sensitive user information.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🧪 Testing
 
-## License
+Run the test commands defined in your project.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+npm test
+```
+
+## 🔗 Related Repository
+
+**Frontend:** [music_web](https://github.com/sagarpatil-17/music_web)
+
+## 👨‍💻 Author
+
+**Sagar Patil**
+
+- GitHub: [@sagarpatil-17](https://github.com/sagarpatil-17)
+
+---
+
+Built with NestJS, Prisma, MongoDB, and Supabase.
