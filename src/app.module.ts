@@ -10,6 +10,7 @@ import { StorageModule } from './storage/storage.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { LikesModule } from './likes/likes.module';
 import { ProfileModule } from './profile/profile.module';
+import { ServerModule } from './server/server.module';
 
 
 @Module({
@@ -27,6 +28,7 @@ import { ProfileModule } from './profile/profile.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ServerModule,
   ],
 })
 export class AppModule { }
